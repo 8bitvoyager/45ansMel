@@ -392,42 +392,62 @@ function ensureAudio() {
       masterGain.gain.value = isMuted ? 0 : 1;
       masterGain.connect(audioCtx.destination);
     }
+    // Silent buffer trick — forces iOS/Android to unlock audio
+    var buf = audioCtx.createBuffer(1, 1, 22050);
+    var src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.connect(audioCtx.destination);
+    src.start(0);
     if (audioCtx.state === 'suspended') audioCtx.resume();
   } catch(e) {}
 }
 
+function scheduleNotes() {
+  var tempo = 100;
+  var beat  = 60 / tempo;
+  var t0    = audioCtx.currentTime + 0.15;
+  var t     = t0;
+
+  MELODY.forEach(function(note) {
+    var freq = note[0], dur = note[1] * beat;
+    if (freq > 0) playMelodyNote(freq, t, dur);
+    t += dur;
+  });
+
+  BASS.forEach(function(b) {
+    playBassNote(b[0], t0 + b[1] * beat, b[2] * beat);
+  });
+
+  CHORDS.forEach(function(ch) {
+    playChord(ch[0], t0 + ch[1] * beat, ch[2] * beat);
+  });
+
+  document.getElementById('mute-btn').classList.add('visible');
+}
+
 function startMusic() {
   if (musicStarted) return;
-  musicStarted = true;
 
   try {
     ensureAudio();
     if (!audioCtx) return;
 
-    var tempo = 100;
-    var beat  = 60 / tempo;
-    var t0    = audioCtx.currentTime + 0.3;
-    var t     = t0;
-
-    // Melody
-    MELODY.forEach(function(note) {
-      var freq = note[0], dur = note[1] * beat;
-      if (freq > 0) playMelodyNote(freq, t, dur);
-      t += dur;
-    });
-
-    // Bass line
-    BASS.forEach(function(b) {
-      playBassNote(b[0], t0 + b[1] * beat, b[2] * beat);
-    });
-
-    // Chord pads
-    CHORDS.forEach(function(ch) {
-      playChord(ch[0], t0 + ch[1] * beat, ch[2] * beat);
-    });
-
-    document.getElementById('mute-btn').classList.add('visible');
-  } catch(e) { /* Web Audio not supported */ }
+    if (audioCtx.state === 'running') {
+      // Context ready — schedule immediately
+      musicStarted = true;
+      scheduleNotes();
+    } else {
+      // Context still waking up — wait for it, then schedule
+      audioCtx.resume();
+      audioCtx.onstatechange = function() {
+        if (audioCtx.state === 'running' && !musicStarted) {
+          musicStarted = true;
+          scheduleNotes();
+          audioCtx.onstatechange = null;
+        }
+      };
+    }
+  } catch(e) {}
 }
 
 function toggleMute() {
@@ -575,9 +595,10 @@ function goTo(i) {
   render();
 }
 
-btnPrev.addEventListener('click', function() { goTo(current - 1); });
-btnNext.addEventListener('click', function() { goTo(current + 1); });
+btnPrev.addEventListener('click', function() { ensureAudio(); goTo(current - 1); });
+btnNext.addEventListener('click', function() { ensureAudio(); goTo(current + 1); });
 dotsEl.addEventListener('click', function(e) {
+  ensureAudio();
   var btn = e.target.closest('.dot');
   if (btn) goTo(parseInt(btn.dataset.i, 10));
 });
@@ -594,6 +615,7 @@ container.addEventListener('touchstart', function(e) {
 }, { passive: true });
 
 container.addEventListener('touchend', function(e) {
+  ensureAudio();
   var dx = touchX - e.changedTouches[0].clientX;
   var dy = touchY - e.changedTouches[0].clientY;
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) {
