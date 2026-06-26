@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Liberté 45 — Bonne fête Mélanie!</title>
+  <meta property="og:title" content="Liberté 45">
+  <meta property="og:description" content="Une surprise pour tes 45 ans 🥂">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #0e0e12;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #container {
+      width: 100%;
+      max-width: 430px;
+      height: 100%;
+      height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+    }
+
+    /* --- Content area --- */
+    #content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 28px 96px;
+      text-align: center;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #content::-webkit-scrollbar { display: none; }
+
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+      opacity: 0.85;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .emoji {
+      font-size: 50px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    .emoji.intro { font-size: 48px; margin-bottom: 12px; }
+    .emoji.last { animation: heartbeat 1.8s ease-in-out infinite; }
+
+    .big-number {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(72px, 20vw, 110px);
+      font-weight: 900;
+      line-height: 0.85;
+      margin-bottom: 2px;
+      letter-spacing: -2px;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 6vw, 28px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .card-title.intro {
+      font-size: clamp(22px, 6vw, 30px);
+      letter-spacing: 1px;
+    }
+
+    .card-subtitle {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 400;
+      font-style: italic;
+      margin-bottom: 28px;
+      opacity: 0.8;
+    }
+
+    .divider {
+      width: 40px;
+      height: 2px;
+      opacity: 0.35;
+      margin: 18px 0 22px;
+      border-radius: 1px;
+    }
+
+    .message {
+      font-size: 15px;
+      line-height: 1.75;
+      opacity: 0.9;
+      white-space: pre-line;
+      max-width: 310px;
+      font-weight: 400;
+    }
+
+    .wish {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      font-weight: 700;
+      font-style: italic;
+      margin-top: 24px;
+      opacity: 0.9;
+    }
+    .wish.last {
+      font-size: 20px;
+      opacity: 1;
+    }
+
+    .hint {
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 36px;
+      opacity: 0.5;
+      letter-spacing: 0.5px;
+      animation: swipe-hint 2s ease-in-out infinite;
+    }
+
+    /* --- Navigation --- */
+    #nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0 24px 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      z-index: 10;
+    }
+
+    .nav-arrow {
+      background: none;
+      border: none;
+      font-size: 18px;
+      padding: 10px;
+      line-height: 1;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .nav-arrow:disabled { cursor: default; }
+    .nav-arrow:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.5);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    #dots {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .dot {
+      height: 7px;
+      border-radius: 4px;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .dot:focus-visible {
+      outline: 2px solid rgba(255,255,255,0.5);
+      outline-offset: 2px;
+    }
+
+    /* --- Confetti --- */
+    #confetti {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -12px;
+      opacity: 0.85;
+    }
+
+    /* --- Animations --- */
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes swipe-hint {
+      0%, 100% { transform: translateX(0); }
+      50%      { transform: translateX(6px); }
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      15%      { transform: scale(1.12); }
+      30%      { transform: scale(1); }
+      45%      { transform: scale(1.08); }
+      60%      { transform: scale(1); }
+    }
+
+    @keyframes confetti-fall {
+      0%   { transform: translateY(0) translateX(0) rotate(var(--rot0)); opacity: 0.9; }
+      100% { transform: translateY(105vh) translateX(var(--drift)) rotate(calc(var(--rot0) + 720deg)); opacity: 0; }
+    }
+
+    /* Safe area for notched phones */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      #nav { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="container">
+      <div id="content"></div>
+      <nav id="nav">
+        <button class="nav-arrow" id="btn-prev" aria-label="Précédent">‹</button>
+        <div id="dots"></div>
+        <button class="nav-arrow" id="btn-next" aria-label="Suivant">›</button>
+      </nav>
+      <div id="confetti"></div>
+    </div>
+  </div>
+
+<script>
+// ============================================================
+//  Card data
+// ============================================================
+const CARDS = [
+  {
+    id: 'intro',
+    emoji: '🥂',
+    emojiClass: 'intro',
+    label: '',
+    title: 'Liberté 45',
+    titleClass: 'intro',
+    subtitle: 'Les 6 vies de Mélanie',
+    message: "Parce qu'à 45 ans, t'as déjà prouvé que t'es\npas juste une version de toi-même.",
+    wish: '',
+    hint: 'Swipe pour les découvrir →',
+    showBigNumber: true,
+    isLast: false,
+    colors: {
+      bg:       'linear-gradient(150deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+      accent:   '#e2b44f',
+      text:     '#ffffff',
+      labelBg:  'rgba(226,180,79,0.15)',
+      theme:    '#1a1a2e'
+    }
+  },
+  {
+    id: 'summer',
+    emoji: '⚽🚵‍♀️',
+    label: '01 / 06',
+    title: "La Sportive d'été",
+    message: "Celle qui pédale comme si la montagne lui devait de l'argent pis qui court après un ballon comme si sa vie en dépendait.\n\n45 ans de cardio non-stop.",
+    wish: 'Bonne fête, Mélanie version été! ☀️',
+    colors: {
+      bg:       'linear-gradient(150deg, #e65100 0%, #f57c00 40%, #ffb300 100%)',
+      accent:   '#fff8e1',
+      text:     '#ffffff',
+      labelBg:  'rgba(255,255,255,0.18)',
+      theme:    '#e65100'
+    }
+  },
+  {
+    id: 'winter',
+    emoji: '🏒⛷️',
+    label: '02 / 06',
+    title: "La Sportive d'hiver",
+    message: "Celle qui monte des montagnes en ski de rando juste pour le fun de redescendre, pis qui lace ses patins même quand il fait -25.\n\nLe froid te connaît pas.",
+    wish: 'Bonne fête, Mélanie version hiver! ❄️',
+    colors: {
+      bg:       'linear-gradient(150deg, #4a8db7 0%, #81c4e8 50%, #d4ecf7 100%)',
+      accent:   '#1a3a50',
+      text:     '#1a3a50',
+      labelBg:  'rgba(26,58,80,0.1)',
+      theme:    '#4a8db7'
+    }
+  },
+  {
+    id: 'investor',
+    emoji: '📈💰',
+    label: '03 / 06',
+    title: "L'Investisseuse",
+    message: "Celle qui check son portefeuille avant son café le matin.\n\nJ'aurais jamais pensé que de t'initier à la gestion autonome ferait de toi une machine à épargner.\n\nT'as atteint ta Liberté 45 avant tout le monde.",
+    wish: 'Bonne fête, Mélanie version Wall Street! 🏦',
+    colors: {
+      bg:       'linear-gradient(150deg, #1b4332 0%, #2d6a4f 50%, #40916c 100%)',
+      accent:   '#e2b44f',
+      text:     '#ffffff',
+      labelBg:  'rgba(226,180,79,0.15)',
+      theme:    '#1b4332'
+    }
+  },
+  {
+    id: 'festive',
+    emoji: '🍺🎉',
+    label: '04 / 06',
+    title: 'La Festive',
+    message: "Celle qui est toujours partante pour une bière.\nN'importe quand.\nN'importe où.\n\n45 ans de « oui, j'suis game! »",
+    wish: 'Bonne fête, Mélanie version 5 à 7! 🍻',
+    colors: {
+      bg:       'linear-gradient(150deg, #4a1a6b 0%, #7b2d8e 40%, #c084cf 100%)',
+      accent:   '#fce4a8',
+      text:     '#ffffff',
+      labelBg:  'rgba(252,228,168,0.15)',
+      theme:    '#4a1a6b'
+    }
+  },
+  {
+    id: 'biologist',
+    emoji: '🔬🧬',
+    label: '05 / 06',
+    title: 'La Biologiste',
+    message: "Celle qui a étudié le vivant, travaillé dans le domaine, et qui comprend probablement mieux les écosystèmes que la plupart du monde.\n\nLa bio, c'est pas juste un diplôme.\nC'est une lentille sur la vie.",
+    wish: 'Bonne fête, Mélanie version labo! 🌿',
+    colors: {
+      bg:       'linear-gradient(150deg, #065f5b 0%, #0d9488 40%, #2dd4bf 100%)',
+      accent:   '#f0fdfa',
+      text:     '#ffffff',
+      labelBg:  'rgba(255,255,255,0.15)',
+      theme:    '#065f5b'
+    }
+  },
+  {
+    id: 'bestfriend',
+    emoji: '📞',
+    label: '06 / 06',
+    title: 'La Meilleure Amie',
+    message: "30 ans d'amitié.\n\nT'es probablement la seule personne au monde à qui je parle encore au téléphone. Genre, pour vrai au téléphone. Comme dans le temps.\n\nToutes les Mélanie sont exceptionnelles.\nMais celle-là... c'est ma préférée.",
+    wish: 'Bonne fête, Mél. ❤️',
+    isLast: true,
+    colors: {
+      bg:       'linear-gradient(150deg, #881337 0%, #be123c 40%, #e86833 100%)',
+      accent:   '#ffffff',
+      text:     '#ffffff',
+      labelBg:  'rgba(255,255,255,0.15)',
+      theme:    '#881337'
+    }
+  }
+];
+
+// ============================================================
+//  State & DOM refs
+// ============================================================
+let current = 0;
+const container  = document.getElementById('container');
+const contentEl  = document.getElementById('content');
+const dotsEl     = document.getElementById('dots');
+const confettiEl = document.getElementById('confetti');
+const btnPrev    = document.getElementById('btn-prev');
+const btnNext    = document.getElementById('btn-next');
+const themeMeta  = document.querySelector('meta[name="theme-color"]');
+
+// ============================================================
+//  Render
+// ============================================================
+function render() {
+  const card = CARDS[current];
+  const c    = card.colors;
+
+  // Background
+  container.style.background = c.bg;
+
+  // Navigation colors
+  btnPrev.style.color   = c.text;
+  btnPrev.style.opacity = current === 0 ? '0.15' : '0.6';
+  btnPrev.disabled      = current === 0;
+  btnNext.style.color   = c.text;
+  btnNext.style.opacity = current === CARDS.length - 1 ? '0.15' : '0.6';
+  btnNext.disabled      = current === CARDS.length - 1;
+
+  // Theme color for mobile browser chrome
+  if (themeMeta) themeMeta.content = c.theme || '#1a1a2e';
+
+  // Build card HTML
+  let html = '';
+
+  // Label
+  if (card.label) {
+    html += `<div class="label" style="background:${c.labelBg};color:${c.text}">${card.label}</div>`;
+  }
+
+  // Emoji
+  const emojiCls = [
+    'emoji',
+    card.emojiClass || '',
+    card.isLast ? 'last' : ''
+  ].filter(Boolean).join(' ');
+  html += `<div class="${emojiCls}">${card.emoji}</div>`;
+
+  // Big number
+  if (card.showBigNumber) {
+    html += `<div class="big-number" style="color:${c.accent}">45</div>`;
+  }
+
+  // Title
+  const titleCls = 'card-title' + (card.titleClass ? ' ' + card.titleClass : '');
+  const titleColor = card.showBigNumber ? c.accent : c.text;
+  html += `<h1 class="${titleCls}" style="color:${titleColor}">${card.title}</h1>`;
+
+  // Subtitle
+  if (card.subtitle) {
+    html += `<p class="card-subtitle" style="color:${c.accent}">${card.subtitle}</p>`;
+  }
+
+  // Divider
+  const divColor = card.showBigNumber ? c.accent : c.text;
+  html += `<div class="divider" style="background:${divColor}"></div>`;
+
+  // Message
+  html += `<p class="message" style="color:${c.text}">${card.message}</p>`;
+
+  // Wish
+  if (card.wish) {
+    const wishCls = 'wish' + (card.isLast ? ' last' : '');
+    html += `<p class="${wishCls}" style="color:${c.accent}">${card.wish}</p>`;
+  }
+
+  // Hint
+  if (card.hint) {
+    html += `<p class="hint" style="color:${c.text}">${card.hint}</p>`;
+  }
+
+  // Inject & animate
+  contentEl.style.color = c.text;
+  contentEl.innerHTML   = html;
+  contentEl.style.animation = 'none';
+  contentEl.offsetHeight; // force reflow
+  contentEl.style.animation = 'card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both';
+
+  // Dots
+  renderDots(c);
+
+  // Confetti
+  if (card.isLast) showConfetti();
+  else hideConfetti();
+}
+
+function renderDots(c) {
+  let html = '';
+  for (let i = 0; i < CARDS.length; i++) {
+    const w   = i === current ? '22px' : '7px';
+    const op  = i === current ? '0.85' : '0.25';
+    html += `<button class="dot" data-i="${i}" style="width:${w};background:${c.text};opacity:${op}" aria-label="Carte ${i + 1}"></button>`;
+  }
+  dotsEl.innerHTML = html;
+}
+
+// ============================================================
+//  Confetti
+// ============================================================
+const CONFETTI_COLORS = ['#e2b44f','#ff6b35','#74b9ff','#10b981','#e11d48','#8e44ad','#f59e0b','#ffffff'];
+
+function showConfetti() {
+  if (confettiEl.children.length > 0) return;
+  for (let i = 0; i < 50; i++) {
+    const el       = document.createElement('div');
+    const isCircle = Math.random() > 0.5;
+    const size     = Math.random() * 6 + 5;
+    const w        = isCircle ? size : (Math.random() * 4 + 3);
+    const h        = isCircle ? size : (Math.random() * 8 + 6);
+    const dur      = (Math.random() * 2.5 + 2.5).toFixed(2);
+    const delay    = (Math.random() * 3).toFixed(2);
+    const drift    = ((Math.random() - 0.5) * 120).toFixed(1);
+    const rot      = (Math.random() * 360).toFixed(0);
+
+    el.className      = 'confetti-piece';
+    el.style.left     = (Math.random() * 100) + '%';
+    el.style.width    = w + 'px';
+    el.style.height   = h + 'px';
+    el.style.background    = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+    el.style.borderRadius  = isCircle ? '50%' : '2px';
+    el.style.setProperty('--drift', drift + 'px');
+    el.style.setProperty('--rot0',  rot + 'deg');
+    el.style.animation     = `confetti-fall ${dur}s ${delay}s ease-in both infinite`;
+
+    confettiEl.appendChild(el);
+  }
+}
+
+function hideConfetti() {
+  confettiEl.innerHTML = '';
+}
+
+// ============================================================
+//  Navigation
+// ============================================================
+function goTo(i) {
+  if (i < 0 || i >= CARDS.length || i === current) return;
+  current = i;
+  render();
+}
+
+btnPrev.addEventListener('click', () => goTo(current - 1));
+btnNext.addEventListener('click', () => goTo(current + 1));
+dotsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('.dot');
+  if (btn) goTo(parseInt(btn.dataset.i, 10));
+});
+
+// ============================================================
+//  Touch / swipe
+// ============================================================
+let touchX = 0, touchY = 0;
+
+container.addEventListener('touchstart', (e) => {
+  touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
+}, { passive: true });
+
+container.addEventListener('touchend', (e) => {
+  const dx = touchX - e.changedTouches[0].clientX;
+  const dy = touchY - e.changedTouches[0].clientY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 45) {
+    goTo(current + (dx > 0 ? 1 : -1));
+  }
+}, { passive: true });
+
+// ============================================================
+//  Keyboard
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ')  { e.preventDefault(); goTo(current + 1); }
+  if (e.key === 'ArrowLeft')                     { e.preventDefault(); goTo(current - 1); }
+});
+
+// ============================================================
+//  Init
+// ============================================================
+render();
+</script>
+</body>
+</html>
