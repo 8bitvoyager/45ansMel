@@ -27,6 +27,7 @@
 
     /* --- Content --- */
     #content {
+      position: relative; z-index: 2;
       flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
       padding: 48px 24px 100px; text-align: center;
       overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
@@ -150,6 +151,56 @@
       100% { transform: translateY(105vh) translateX(var(--drift)) rotate(calc(var(--rot0) + 720deg)); opacity: 0; }
     }
 
+    /* --- Background animations --- */
+    #bg-anim { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+
+    .bg-star { position: absolute; border-radius: 50%; }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.6); }
+    }
+
+    .bg-sun { position: absolute; top: -60px; right: -60px; width: 260px; height: 260px; border-radius: 50%; }
+    @keyframes sun-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.18); opacity: 0.8; }
+    }
+
+    .bg-snow { position: absolute; border-radius: 50%; background: white; }
+    @keyframes snow-fall {
+      0% { transform: translateY(0) translateX(0); opacity: 0.6; }
+      100% { transform: translateY(110vh) translateX(var(--drift)); opacity: 0; }
+    }
+
+    .bg-bar { position: absolute; bottom: 0; border-radius: 6px 6px 0 0; transform-origin: bottom; }
+    @keyframes bar-grow {
+      0% { transform: scaleY(0); opacity: 0; }
+      60% { opacity: 1; }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .bg-bubble { position: absolute; border-radius: 50%; }
+    @keyframes bubble-rise {
+      0% { transform: translateY(0) scale(1); opacity: 0.4; }
+      80% { opacity: 0.2; }
+      100% { transform: translateY(-110vh) scale(0.6); opacity: 0; }
+    }
+
+    .bg-cell { position: absolute; border-radius: 50%; }
+    @keyframes cell-drift {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      25% { transform: translate(var(--dx), var(--dy)) scale(1.08); }
+      50% { transform: translate(calc(var(--dx)*-0.6), calc(var(--dy)*1.3)) scale(0.95); }
+      75% { transform: translate(calc(var(--dx)*0.4), calc(var(--dy)*-0.5)) scale(1.03); }
+    }
+
+    .bg-heart { position: absolute; }
+    @keyframes heart-rise {
+      0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.35; }
+      50% { opacity: 0.5; }
+      100% { transform: translateY(-110vh) scale(0.6) rotate(var(--rot)); opacity: 0; }
+    }
+
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       #nav { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
       #mute-btn { top: calc(16px + env(safe-area-inset-top)); }
@@ -159,6 +210,7 @@
 <body>
   <div id="app">
     <div id="container">
+      <div id="bg-anim"></div>
       <div id="content"></div>
       <nav id="nav">
         <button class="nav-arrow" id="btn-prev" aria-label="Précédent">‹</button>
@@ -276,7 +328,7 @@ const CARDS = [
     emoji: '📞',
     label: '06 / 06',
     title: 'La Meilleure Amie',
-    message: "30 ans d'amitié.\n\nT'es probablement la seule personne au monde à qui je parle encore au téléphone. Comme dans le temps.\n\nToutes les Mélanie sont exceptionnelles.\nMais celle-là... c'est ma préférée.",
+    message: "30 ans d'amitié.\n\nT'es probablement la seule personne au monde à qui je parle encore au téléphone. Comme dans le temps.\n\nPis c'est toujours aussi plaisant de te voir rire.\n\nToutes les Mélanie sont exceptionnelles.\nMais celle-là... c'est ma préférée.",
     wish: 'Bonne fête, Mél. ❤️',
     isLast: true,
     colors: {
@@ -472,6 +524,153 @@ var confettiEl = document.getElementById('confetti');
 var btnPrev    = document.getElementById('btn-prev');
 var btnNext    = document.getElementById('btn-next');
 var themeMeta  = document.querySelector('meta[name="theme-color"]');
+var bgAnimEl   = document.getElementById('bg-anim');
+
+// ============================================================
+//  Background animations
+// ============================================================
+function renderBgAnim(card) {
+  bgAnimEl.innerHTML = '';
+  var c = card.colors;
+  switch(card.id) {
+    case 'intro':      animStars(c); break;
+    case 'summer':     animSun(c); break;
+    case 'winter':     animSnow(c); break;
+    case 'investor':   animBars(c); break;
+    case 'festive':    animBubbles(c); break;
+    case 'biologist':  animCells(c); break;
+    case 'bestfriend': break; // confetti only
+  }
+}
+
+function animStars(c) {
+  for (var i = 0; i < 22; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-star';
+    var s = Math.random()*3+2;
+    d.style.cssText = 'left:'+Math.random()*100+'%;top:'+Math.random()*100+'%;width:'+s+'px;height:'+s+'px;background:'+c.accent+';animation:twinkle '+(Math.random()*3+2).toFixed(1)+'s '+(Math.random()*4).toFixed(1)+'s ease-in-out infinite';
+    bgAnimEl.appendChild(d);
+  }
+}
+
+function animSun(c) {
+  // SVG sun silhouette (like the mountain in winter)
+  var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 430 430');
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.style.cssText = 'position:absolute;top:-40px;right:-60px;width:320px;height:320px;opacity:0.08';
+  // Core circle
+  var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  circle.setAttribute('cx','215'); circle.setAttribute('cy','215'); circle.setAttribute('r','90');
+  circle.setAttribute('fill','white');
+  svg.appendChild(circle);
+  // 12 triangular rays
+  var rays = '';
+  for (var i = 0; i < 12; i++) {
+    var a = i*30*Math.PI/180, ha = 10*Math.PI/180;
+    var x1 = 215+100*Math.cos(a-ha), y1 = 215+100*Math.sin(a-ha);
+    var x2 = 215+160*Math.cos(a),    y2 = 215+160*Math.sin(a);
+    var x3 = 215+100*Math.cos(a+ha), y3 = 215+100*Math.sin(a+ha);
+    rays += 'M'+x1.toFixed(1)+','+y1.toFixed(1)+' L'+x2.toFixed(1)+','+y2.toFixed(1)+' L'+x3.toFixed(1)+','+y3.toFixed(1)+' Z ';
+  }
+  var rp = document.createElementNS('http://www.w3.org/2000/svg','path');
+  rp.setAttribute('d',rays); rp.setAttribute('fill','white');
+  svg.appendChild(rp);
+  bgAnimEl.appendChild(svg);
+
+  // Animated glow overlay
+  var d = document.createElement('div');
+  d.className = 'bg-sun';
+  d.style.cssText = 'top:-80px;right:-80px;width:340px;height:340px';
+  d.style.background = 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,230,100,0.25) 35%, rgba(255,180,50,0.1) 55%, transparent 70%)';
+  d.style.animation = 'sun-pulse 4s ease-in-out infinite';
+  bgAnimEl.appendChild(d);
+  // Rays
+  for (var i = 0; i < 8; i++) {
+    var r = document.createElement('div');
+    var angle = i * 45;
+    r.style.cssText = 'position:absolute;top:30px;right:50px;width:3px;height:120px;background:rgba(255,255,255,0.12);border-radius:2px;transform-origin:center 120px;transform:rotate('+angle+'deg);animation:sun-pulse 4s '+(i*0.2)+'s ease-in-out infinite';
+    bgAnimEl.appendChild(r);
+  }
+  // Warm glow at bottom
+  var g = document.createElement('div');
+  g.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to top, rgba(255,180,50,0.06), transparent);pointer-events:none';
+  bgAnimEl.appendChild(g);
+}
+
+function animSnow(c) {
+  // Mountain silhouette
+  var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 430 180');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.style.cssText = 'position:absolute;bottom:0;left:0;width:100%;height:180px;opacity:0.07';
+  var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d','M0,180 L70,90 L110,130 L190,30 L250,100 L310,50 L380,110 L430,70 L430,180 Z');
+  path.setAttribute('fill', c.accent);
+  svg.appendChild(path);
+  bgAnimEl.appendChild(svg);
+  // Snowflakes
+  for (var i = 0; i < 25; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-snow';
+    var s = Math.random()*4+2;
+    d.style.cssText = 'left:'+Math.random()*100+'%;top:-10px;width:'+s+'px;height:'+s+'px;opacity:0.5';
+    d.style.setProperty('--drift',(Math.random()-0.5)*60+'px');
+    d.style.animation = 'snow-fall '+(Math.random()*4+3).toFixed(1)+'s '+(Math.random()*5).toFixed(1)+'s linear infinite';
+    bgAnimEl.appendChild(d);
+  }
+}
+
+function animBars(c) {
+  var n = 8;
+  var w = 28;
+  var gap = 14;
+  var totalW = n*w + (n-1)*gap;
+  var startX = (430 - totalW) / 2;
+  for (var i = 0; i < n; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-bar';
+    var h = 60 + i*22 + Math.random()*15;
+    d.style.cssText = 'left:'+(startX+i*(w+gap))+'px;width:'+w+'px;height:'+h+'px;background:'+c.accent+';opacity:0.12;animation:bar-grow 1.2s '+(i*0.12).toFixed(2)+'s cubic-bezier(0.22,1,0.36,1) both';
+    bgAnimEl.appendChild(d);
+  }
+}
+
+function animBubbles(c) {
+  for (var i = 0; i < 24; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-bubble';
+    var s = Math.random()*18+8;
+    d.style.cssText = 'left:'+Math.random()*90+'%;bottom:-20px;width:'+s+'px;height:'+s+'px;border:1.5px solid rgba(252,228,168,0.35);background:rgba(252,228,168,0.08);animation:bubble-rise '+(Math.random()*4+3).toFixed(1)+'s '+(Math.random()*5).toFixed(1)+'s linear infinite';
+    bgAnimEl.appendChild(d);
+  }
+}
+
+function animCells(c) {
+  for (var i = 0; i < 12; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-cell';
+    var s = Math.random()*50+20;
+    d.style.cssText = 'left:'+Math.random()*85+'%;top:'+Math.random()*85+'%;width:'+s+'px;height:'+s+'px;border:1.5px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06)';
+    d.style.setProperty('--dx',(Math.random()-0.5)*50+'px');
+    d.style.setProperty('--dy',(Math.random()-0.5)*50+'px');
+    d.style.animation = 'cell-drift '+(Math.random()*5+5).toFixed(1)+'s '+(Math.random()*3).toFixed(1)+'s ease-in-out infinite';
+    bgAnimEl.appendChild(d);
+  }
+}
+
+function animHearts(c) {
+  for (var i = 0; i < 12; i++) {
+    var d = document.createElement('div');
+    d.className = 'bg-heart';
+    var s = Math.random()*10+10;
+    d.style.cssText = 'left:'+Math.random()*90+'%;bottom:-20px;font-size:'+s+'px;line-height:1';
+    d.style.setProperty('--rot',(Math.random()-0.5)*40+'deg');
+    d.style.animation = 'heart-rise '+(Math.random()*4+4).toFixed(1)+'s '+(Math.random()*6).toFixed(1)+'s linear infinite';
+    d.textContent = '❤';
+    bgAnimEl.appendChild(d);
+  }
+}
 
 // ============================================================
 //  Render
@@ -481,6 +680,7 @@ function render() {
   var c    = card.colors;
 
   container.style.background = c.bg;
+  renderBgAnim(card);
   btnPrev.style.color   = c.text;
   btnPrev.style.opacity = current === 0 ? '0.15' : '0.6';
   btnPrev.disabled      = current === 0;
