@@ -384,15 +384,25 @@ function playChord(freqs, time, dur) {
   });
 }
 
+function ensureAudio() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = isMuted ? 0 : 1;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch(e) {}
+}
+
 function startMusic() {
   if (musicStarted) return;
   musicStarted = true;
 
   try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = isMuted ? 0 : 1;
-    masterGain.connect(audioCtx.destination);
+    ensureAudio();
+    if (!audioCtx) return;
 
     var tempo = 100;
     var beat  = 60 / tempo;
@@ -578,6 +588,7 @@ dotsEl.addEventListener('click', function(e) {
 var touchX = 0, touchY = 0;
 
 container.addEventListener('touchstart', function(e) {
+  ensureAudio();
   touchX = e.touches[0].clientX;
   touchY = e.touches[0].clientY;
 }, { passive: true });
